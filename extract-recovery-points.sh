@@ -26,7 +26,7 @@ for VAULT in $VAULTS; do
     for RP_ARN in $RECOVERY_POINTS; do
         echo "Inspecting recovery point: $RP_ARN"
 
-        DETAILS= $(aws backup describe-recovery-point \
+        DETAILS=$(aws backup describe-recovery-point \
         --backup-vault-name "$VAULT" \
         --recovery-point-arn "$RP_ARN")
 
@@ -35,9 +35,9 @@ for VAULT in $VAULTS; do
         RESOURCE_ID=$(basename "$RESOURCE_ARN")
 
         # Skip AMIs in skip list
-        if [["$RESOURCE_TYPE" == "EC2"]]; then
+        if [[ "$RESOURCE_TYPE" == "EC2" ]]; then
             for AMI in "${SKIP_AMIS[@]}"; do
-                if [["$RESOURCE_ID" == "$AMI"]]; then
+                if [[ "$RESOURCE_ID" == "$AMI" ]]; then
                     echo "Skipping AMI: $RESOURCE_ID"
                     continue 2
                 fi
@@ -45,18 +45,19 @@ for VAULT in $VAULTS; do
         fi
 
         # Check if resource ID is in our target list
-        if [["$RESOURCE_TYPE" == "EC2"]]; then
+        if [[ "$RESOURCE_TYPE" == "EC2" ]]; then
             for ID in "${TARGET_INSTANCES[@]}"; do
-                if [[ "$RESOURCE_ID" == "$ID"]]; then
+                if [[ "$RESOURCE_ID" == "$ID" ]]; then
                     echo "$VAULT,$RP_ARN" >> "$OUTPUT_FILE"
                     echo " Marked for deletion (EC2): $RESOURCE_ID"
                     break
                 fi
             done
-        elif [[ "$RESOURCE_TYPE" == "EBS"]]; then
+        elif [[ "$RESOURCE_TYPE" == "EBS" ]]; then
             for ID in "${TARGET_VOLUMES[@]}"; do
-                if [["$RESOURCE_ID" == "$ID"]]; then
-                    echo "   ✅ Marked for deletion (EBS): $RESOURCE_ID"
+                if [[ "$RESOURCE_ID" == "$ID" ]]; then
+                    echo "$VAULT,$RP_ARN" >> "$OUTPUT_FILE"
+                    echo " Marked for deletion (EBS): $RESOURCE_ID"
                     break
                 fi
             done
